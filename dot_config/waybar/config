@@ -3,31 +3,99 @@
     "layer": "top",
     "position": "bottom",
     "margin": "4px 10px 10px 10px",
+    "spacing": 16,
 
 // positions generated based on config.ctl //
-    "modules-left": ["battery", "sway/mode", "cpu", "memory", "idle_inhibitor"],
+    "modules-left": ["battery", "custom/player", "cpu", "memory", "group/left-expand"],
     "modules-center": ["sway/workspaces"],
-    "modules-right": ["group/expand","network","group/expand-3","group/expand-2","clock"],
+    "modules-right": ["group/expand","network","pulseaudio", "backlight", "clock"],
+
+"battery": {
+    "states": {
+    "good": 95,
+    "warning": 25,
+    "critical": 15,
+    },
+    "format": "{icon}",
+    "rotate": 0,
+    "format-charging": "<span color='#a6d189'>󰂄</span>",
+    "format-plugged": "󰂄",
+    "format-alt": "{icon} <span font-size='10pt'>{capacity}%</span>",
+    "tooltip": true,
+    "tooltip-format": "Battery: {capacity}%",
+    "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+},
+
+"custom/player": {
+    "format": "",
+    "interval": "once",
+    "on-click": "playerctl previous",
+    "on-click-middle": "playerctl play-pause", 
+    "on-click-right": "playerctl next",
+    "tooltip": true,
+    "tooltip-format": "PlayerCtl",
+    },
+
+"cpu": {
+    "interval": 5,
+    "format": "{icon}",
+    "rotate": 270,
+    "format-icons": ["󰝦","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"],
+},
 
 "memory": {
-    "interval": 1,
+    "interval": 5,
     "rotate": 270,
     "format": "{icon}",
     "format-icons": ["󰝦","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"],
     "max-length": 10
 },
 
-"cpu": {
-    "interval": 1,
-    "format": "{icon}",
-    "rotate": 270,
-    "format-icons": ["󰝦","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"],
+"group/left-expand": {
+    "orientation": "horizontal",
+    "drawer": {
+        "children-class": "not-power",
+        "transition-to-right": true
+    },
+    "modules": ["custom/left-menu", "custom/temperature", "idle_inhibitor", "custom/powermenu"]
 },
 
-"tray": {
-    "icon-size": 16,
+"custom/left-menu": {
+    "format": "󰅂",
+},
+
+"custom/temperature": {
+    "interval": 5,
+    "format": "",
+    "exec": "sensors coretemp-isa-0000 | grep 'Package id 0' | cut -c17-18",
+    "tooltip": true,
+    "tooltip-format": "Temperature: {}°C"
+},
+
+"idle_inhibitor": {
+    "format": "{icon}",
     "rotate": 0,
-    "spacing": 3
+    "format-icons": {
+    "activated": "",
+    "deactivated": ""
+    }
+},
+
+"custom/powermenu": {
+    "format": "󰐥",  // Icono de poder
+    "tooltip": true,
+    "tooltip-format": "Power Menu",
+    "on-click": "~/.config/sway/scripts/power_menu.sh",
+    "on-click-right": "systemctl poweroff"  // Opcional: apagar directamente con clic derecho
+},
+
+"sway/workspaces": {
+    "disable-scroll": true,
+    "all-outputs": true,
+    "format": "{icon}",
+    "format-icons": {
+    "default": "",
+    }
 },
 
 "group/expand": {
@@ -44,22 +112,57 @@
     "rotate": 90,
 },
  
-"sway/workspaces": {
-    "disable-scroll": true,
-    "all-outputs": true,
+ "tray": {
+    "icon-size": 16,
+    "rotate": 0,
+    "spacing": 9,
+},
+
+"network": {
+    "tooltip": true,
+    "format-wifi": "{icon} ",
+    "format-icons": ["󰤟", "󰤢", "󰤥"],
+    "rotate": 0,
+    "format-ethernet": "󰈀 ",
+    "tooltip-format": "Network: <big><b>{essid}</b></big>\nSignal strength: <b>{signaldBm}dBm ({signalStrength}%)</b>\nFrequency: <b>{frequency}MHz</b>\nInterface: <b>{ifname}</b>\nIP: <b>{ipaddr}/{cidr}</b>\nGateway: <b>{gwaddr}</b>\nNetmask: <b>{netmask}</b>",
+     "format-linked": "󰈀 {ifname} (No IP)",
+     "format-disconnected": " ",
+     "tooltip-format-disconnected": "Disconnected",
+     "on-click": "/usr/local/bin/ags -t ControlPanel",
+     "interval": 2,
+},
+
+"pulseaudio": {
+    "scroll-step": 5,
     "format": "{icon}",
+    "rotate": 0,
+    "format-muted": "<span font='10'>muted</span>",
+    "tooltip": true,
+    "tooltip-format": "{icon} {desc} {volume}%",
+    "on-click": "pactl set-sink-volume @DEFAULT_SINK@ -5%",
+    "on-click-middle": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "on-click-right": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
     "format-icons": {
-    "default": "",
+        "headphone": "",
+        "hands-free": "",
+        "headset": "",
+        "phone": "",
+        "portable": "",
+        "car": "",
+        "default": ""
     }
 },
 
-"idle_inhibitor": {
-    "format": "{icon}",
+"backlight": {
     "rotate": 0,
-    "format-icons": {
-    "activated": "",
-    "deactivated": ""
-    }
+    "format": "{icon}",
+    "format-icons": ["󰃞", "󰃝", "󰃟", "󰃠"],
+    "tooltip": true,
+    "tooltip-format": "Brightness: {percent}%",
+    "on-scroll-down": "brightnessctl -c backlight set 5%- -n 5",
+    "on-scroll-up": "brightnessctl -c backlight set +5%",
+    "on-click-right": "brightnessctl -c backlight set +5%",
+    "on-click": "brightnessctl -c backlight set 5%- -n 5"
 },
 
 "clock": {
@@ -86,120 +189,4 @@
     "on-scroll-down": "shift_down"
     }
 },
-
-"battery": {
-    "states": {
-    "good": 95,
-    "warning": 30,
-    "critical": 20
-    },
-    "format": "{icon}",
-    "rotate": 0,
-    "format-charging": "<span color='#a6d189'>󰂄</span>",
-    "format-plugged": "󰂄",
-    "format-alt": "{icon} <span font-size='10pt'>{capacity}%</span>",
-    "tooltip": true,
-    "tooltip-format": "{capacity}%",
-    "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
-},
-
-"backlight": {
-    "device": "intel_backlight",
-    "rotate": 0,
-    "format": "{icon}",
-    "format-icons": ["󰃞", "󰃝", "󰃟", "󰃠"],
-    "scroll-step": 1,
-    "min-length": 2
-},
-    
-"group/expand-2": {
-    "orientation": "horizontal",
-    "drawer": {
-    "children-class": "not-power",
-    "transition-to-left": true,
-    "click-to-reveal": true
-    },
-    "modules": ["backlight","backlight/slider","custom/smallspacer","custom/led"]
-},
-   
-"group/expand-3": {
-    "orientation": "horizontal",
-    "drawer": {
-    "children-class": "not-power",
-    "transition-to-left": true,
-    "click-to-reveal": true
-    },
-    "modules": ["pulseaudio","pulseaudio/slider"]
-},
-
-"network": {
-    "tooltip": true,
-    "format-wifi": "{icon} ",
-    "format-icons": ["󰤟", "󰤢", "󰤥"],
-    //  "format-wifi": "<i class='fa-solid fa-wifi-slash'></i>",
-    "rotate": 0,
-    "format-ethernet": "󰈀 ",
-    "tooltip-format": "Network: <big><b>{essid}</b></big>\nSignal strength: <b>{signaldBm}dBm ({signalStrength}%)</b>\nFrequency: <b>{frequency}MHz</b>\nInterface: <b>{ifname}</b>\nIP: <b>{ipaddr}/{cidr}</b>\nGateway: <b>{gwaddr}</b>\nNetmask: <b>{netmask}</b>",
-     "format-linked": "󰈀 {ifname} (No IP)",
-     "format-disconnected": " ",
-     "tooltip-format-disconnected": "Disconnected",
-     "on-click": "/usr/local/bin/ags -t ControlPanel",
-     "interval": 2,
-},
-
-"pulseaudio": {
-    "format": "{icon}",
-    "rotate": 0,
-    "format-muted": "婢",
-    "tooltip-format": "{icon} {desc} // {volume}%",
-    "scroll-step": 5,
-    "format-icons": {
-    "headphone": "",
-    "hands-free": "",
-    "headset": "",
-    "phone": "",
-    "portable": "",
-    "car": "",
-    "default": ["", "", ""]
-    }
-},
-
-"pulseaudio#microphone": {
-    "format": "{format_source}",
-    "rotate": 0,
-    "format-source": "",
-    "format-source-muted": "",
-    "on-click": "pavucontrol -t 4",
-    "on-click-middle": "volumecontrol.sh -i m",
-    "on-scroll-up": "volumecontrol.sh -i i",
-    "on-scroll-down": "volumecontrol.sh -i d",
-    "tooltip-format": "{format_source} {source_desc} // {source_volume}%",
-    "scroll-step": 5
-},
-
-"custom/left-pad": {
-    "format": " ",
-    "tooltip": false
-},
-
-"custom/right-pad": {
-    "format": " ",
-    "tooltip": false
-},
-
-"backlight/slider": {
-    "min": 5,
-    "max": 100,
-    "rotate": 0,
-    "device": "intel_backlight",
-    "scroll-step": 1,
-  },
-  
-  "pulseaudio/slider": {
-    "min": 5,
-    "max": 100,
-    "rotate": 0,
-    "device": "pulseaudio",
-    "scroll-step": 1,
-  },
-} 
+}
